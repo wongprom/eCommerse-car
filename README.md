@@ -1,44 +1,109 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), using the [Redux](https://redux.js.org/) and [Redux Toolkit](https://redux-toolkit.js.org/) template.
+# Ecommerce - Cars
 
-## Available Scripts
+A small project where the focus was on structuring redux flow. It's a create-react-app project.
 
-In the project directory, you can run:
+## Built With
 
-### `yarn start`
+- [Materila-ui](https://material-ui.com/) - React components for faster and easier web development. Build your own design system, or start with Material Design.
+- [react-redux](https://react-redux.js.org/) - Official React bindings for Redux
+- [redux-toolkit](https://redux-toolkit.js.org/) - The official, opinionated, batteries-included toolset for efficient Redux development
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Code snippets
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+store.js
 
-### `yarn test`
+```
+import { configureStore } from '@reduxjs/toolkit';
+import basketReducer from '../features/basketSlice';
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+export const store = configureStore({
+  reducer: {
+    basket: basketReducer,
+  },
+});
 
-### `yarn build`
+```
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+basketSlice.js
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+```
+import { createSlice } from '@reduxjs/toolkit';
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+const initialState = {
+  items: [],
+};
 
-### `yarn eject`
+export const basketSlice = createSlice({
+  name: 'basket',
+  initialState,
+  reducers: {
+    addItemToBasket: (state, action) => {
+      state.items = [...state.items, action.payload];
+    },
+    removeItemFromBasket: (state, action) => {
+      let copyOfBasket = [...state.items];
+      const indexOfItemToRemove = copyOfBasket.findIndex(
+        (item) => item.id === action.payload.id
+      );
+      if (indexOfItemToRemove !== -1) {
+        copyOfBasket.splice(indexOfItemToRemove, 1);
+        state.items = copyOfBasket;
+      } else {
+        alert('The item you want to remove does not exist in the basket');
+      }
+    },
+  },
+});
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+export const { addItemToBasket, removeItemFromBasket } = basketSlice.actions;
+export const selectItems = (state) => state.basket.items;
+export const selectItemsCount = (state) => state.basket.items.length;
+export const selectTotalPrice = (state) => {
+  const arrPrices = state.basket.items?.map((item) => parseInt(item.price));
+  return arrPrices?.reduce((acc, item) => acc + item, 0);
+};
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+export default basketSlice.reducer;
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+index.js
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+import { store } from './app/store';
+import { Provider } from 'react-redux';
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+
+ReactDOM.render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+```
+
+How to get data from store with "selectore"
+
+```
+const cartItems = useSelector(selectItems);
+```
+
+How to dispatch an action
+
+```
+const dispatch = useDispatch();
+
+
+const addItem = () => {
+    const product = {
+      image,
+      brand,
+      id,
+      price,
+    };
+    dispatch(addItemToBasket(product));
+  };
+```
